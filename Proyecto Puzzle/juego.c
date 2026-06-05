@@ -2,9 +2,9 @@
 #include <conio.h>
 #include <string.h>
 
-extern char mapa1[FILAS_MAPA][COLUMNAS_MAPA];
-extern char mapa2[FILAS_MAPA][COLUMNAS_MAPA];
-extern char mapa3[FILAS_MAPA][COLUMNAS_MAPA];
+extern char mapa1[FILAS_MAPA][COLUMNAS_MAPA + 1];
+extern char mapa2[FILAS_MAPA][COLUMNAS_MAPA + 1];
+extern char mapa3[FILAS_MAPA][COLUMNAS_MAPA + 1];
 
 void limpiar_pantalla() {
     system("cls");
@@ -23,28 +23,28 @@ void iniciar_nivel(Nivel *nivel, int numero_nivel) {
     nivel->numero = numero_nivel;
 
     if (numero_nivel == 1) {
-        nivel->mapa        = mapa1;
+        nivel->mapa        = (char (*)[COLUMNAS_MAPA])mapa1;
         nivel->fila_inicio = NIVEL1_INI_FILA;
         nivel->col_inicio  = NIVEL1_INI_COL;
     } else if (numero_nivel == 2) {
-        nivel->mapa        = mapa2;
+        nivel->mapa        = (char (*)[COLUMNAS_MAPA])mapa2;
         nivel->fila_inicio = NIVEL2_INI_FILA;
         nivel->col_inicio  = NIVEL2_INI_COL;
     } else {
-        nivel->mapa        = mapa3;
+        nivel->mapa        = (char (*)[COLUMNAS_MAPA])mapa3;
         nivel->fila_inicio = NIVEL3_INI_FILA;
         nivel->col_inicio  = NIVEL3_INI_COL;
     }
 
     nivel->total_monedas = contar_caracteres(
-        &nivel->mapa[0][0],
-        FILAS_MAPA * COLUMNAS_MAPA,
+        (const char*)nivel->mapa,
+        FILAS_MAPA * (COLUMNAS_MAPA + 1),
         SIM_MONEDA
     );
 
     nivel->celdas_libres = contar_celdas_libres(
-        &nivel->mapa[0][0],
-        FILAS_MAPA * COLUMNAS_MAPA
+        (const char*)nivel->mapa,
+        FILAS_MAPA * (COLUMNAS_MAPA + 1)
     );
 }
 
@@ -59,6 +59,7 @@ void imprimir_ventana(char mapa[FILAS_MAPA][COLUMNAS_MAPA], int fila_jugador, in
     if (inicio_c < 0)                       inicio_c = 0;
     if (inicio_f > FILAS_MAPA - VENTANA_FILAS) inicio_f = FILAS_MAPA - VENTANA_FILAS;
     if (inicio_c > COLUMNAS_MAPA - VENTANA_COLS) inicio_c = COLUMNAS_MAPA - VENTANA_COLS;
+    char (*mapa_real)[COLUMNAS_MAPA + 1] = (char (*)[COLUMNAS_MAPA + 1])mapa;
 
     for (int i = 0; i < VENTANA_FILAS; i++) {
         for (int j = 0; j < VENTANA_COLS; j++) {
@@ -67,7 +68,7 @@ void imprimir_ventana(char mapa[FILAS_MAPA][COLUMNAS_MAPA], int fila_jugador, in
             if (r == fila_jugador && c == col_jugador)
                 putchar(SIM_JUGADOR);
             else
-                putchar(mapa[r][c]);
+                putchar(mapa_real[r][c]);
         }
         putchar('\n');
     }
@@ -104,15 +105,17 @@ int mover_jugador(Jugador *jugador, Nivel *nivel, char direccion) {
         nueva_col  < 0 || nueva_col  >= COLUMNAS_MAPA)
         return -1;
 
-    if (!validar_movimiento(&nivel->mapa[0][0], COLUMNAS_MAPA, nueva_fila, nueva_col))
+    char (*mapa_real)[COLUMNAS_MAPA + 1] = (char (*)[COLUMNAS_MAPA + 1])nivel->mapa;
+
+    if (!validar_movimiento((const char*)nivel->mapa, COLUMNAS_MAPA + 1, nueva_fila, nueva_col))
         return -1;
 
-    char celda = nivel->mapa[nueva_fila][nueva_col];
+    char celda = mapa_real[nueva_fila][nueva_col];
 
     if (celda == SIM_PUERTA) {
         if (!jugador->tiene_llave)
             return -1;
-        nivel->mapa[nueva_fila][nueva_col] = SIM_CAMINO;
+        mapa_real[nueva_fila][nueva_col] = SIM_CAMINO;
         jugador->fila    = nueva_fila;
         jugador->columna = nueva_col;
         jugador->pasos++;
@@ -124,13 +127,13 @@ int mover_jugador(Jugador *jugador, Nivel *nivel, char direccion) {
     jugador->pasos++;
 
     if (celda == SIM_MONEDA) {
-        nivel->mapa[nueva_fila][nueva_col] = SIM_CAMINO;
+        mapa_real[nueva_fila][nueva_col] = SIM_CAMINO;
         jugador->monedas++;
         return 1;
     }
 
     if (celda == SIM_LLAVE) {
-        nivel->mapa[nueva_fila][nueva_col] = SIM_CAMINO;
+        mapa_real[nueva_fila][nueva_col] = SIM_CAMINO;
         jugador->tiene_llave = 1;
         return 2;
     }
@@ -173,8 +176,42 @@ void mostrar_resumen_final(int monedas_totales, int pasos_totales, int niveles_c
 int preguntar_reintentar() {
     char respuesta;
     printf("\nQuieres reintentar el nivel? (s/n): ");
-    fflush(stdin);
     respuesta = tolower(_getch());
     printf("%c\n", respuesta);
     return (respuesta == 's') ? 1 : 0;
+}
+
+
+int contar_caracteres(const char *mapa, int total_celdas, char objetivo) {
+    int conteo = 0;
+    for (int i = 0; i < total_celdas; i++) {
+        if (mapa[i] == objetivo) {
+            conteo++;
+        }
+    }
+    return conteo;
+}
+
+int validar_movimiento(const char *mapa, int columnas, int fila, int columna) {
+    char celda = mapa[fila * columnas + columna];
+    return (celda != SIM_PARED);
+}
+
+int calcular_puntaje(int monedas, int pasos, int niveles_completados) {
+    int puntaje = (monedas * 100) + (niveles_completados * 500) - pasos;
+    return (puntaje < 0) ? 0 : puntaje;
+}
+
+int detectar_objeto(const char *mapa, int columnas, int fila, int columna, char objeto) {
+    return (mapa[fila * columnas + columna] == objeto);
+}
+
+int contar_celdas_libres(const char *mapa, int total_celdas) {
+    int libres = 0;
+    for (int i = 0; i < total_celdas; i++) {
+        if (mapa[i] == SIM_CAMINO) {
+            libres++;
+        }
+    }
+    return libres;
 }
