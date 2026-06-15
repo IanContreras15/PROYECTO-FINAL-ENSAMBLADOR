@@ -88,3 +88,33 @@ contar_celdas_libres:
         jmp  .loop_libres
     .fin_libres:
     ret
+; ──────────────────────────────────────────────────────────────
+; establecer_color(int color)
+;   Llama a SetConsoleTextAttribute via WinAPI
+;   Parametro: ecx = codigo de color (0-15)
+; ──────────────────────────────────────────────────────────────
+global establecer_color
+
+extern GetStdHandle
+extern SetConsoleTextAttribute
+
+section .text
+
+establecer_color:
+    push  rbx
+    push  rsi
+    sub   rsp, 40           ; shadow space (Windows x64 ABI)
+
+    mov   ebx, ecx          ; guardar color
+
+    mov   ecx, -11          ; STD_OUTPUT_HANDLE = -11
+    call  GetStdHandle
+
+    mov   rcx, rax          ; hConsole
+    mov   edx, ebx          ; wAttributes = color
+    call  SetConsoleTextAttribute
+
+    add   rsp, 40
+    pop   rsi
+    pop   rbx
+    ret

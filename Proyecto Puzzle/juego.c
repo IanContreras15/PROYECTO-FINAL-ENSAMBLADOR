@@ -64,30 +64,70 @@ void imprimir_ventana(char mapa[FILAS_MAPA][COLUMNAS_MAPA], int fila_jugador, in
 
     for (int i = 0; i < VENTANA_FILAS; i++) {
         for (int j = 0; j < VENTANA_COLS; j++) {
-            int r = inicio_f + i;
-            int c = inicio_c + j;
+            int  r   = inicio_f + i;
+            int  c   = inicio_c + j;
+            char cel;
+
             if (r == fila_jugador && c == col_jugador)
-                putchar(SIM_JUGADOR);
+                cel = SIM_JUGADOR;
             else
-                putchar(mapa_real[r][c]);
+                cel = mapa_real[r][c];
+
+            /* Color segun simbolo — usando rutina ASM establecer_color */
+            switch (cel) {
+                case SIM_JUGADOR:  establecer_color(COL_CIAN_CLARO);    break;
+                case '#':          establecer_color(COL_GRIS);           break;
+                case SIM_MONEDA:   establecer_color(COL_AMARILLO_CLARO); break;
+                case SIM_LLAVE:    establecer_color(COL_AMARILLO);       break;
+                case SIM_PUERTA:   establecer_color(COL_MAGENTA);        break;
+                case SIM_SALIDA:   establecer_color(COL_VERDE_CLARO);    break;
+                case SIM_TRAMPA:   establecer_color(COL_ROJO_CLARO);     break;
+                case '.':          establecer_color(COL_GRIS);           break;
+                default:           establecer_color(COL_BLANCO);         break;
+            }
+
+            putchar(cel);
+            reset_color();
         }
         putchar('\n');
     }
 }
 
 void imprimir_hud(const Jugador *jugador, const Nivel *nivel) {
+    set_color(COL_CIAN);
     printf("========================================\n");
-    printf("Nivel: %d  |  Salud: %d  |  Llave: %s\n",
-        nivel->numero,
-        jugador->salud,
-        jugador->tiene_llave ? "SI" : "NO"
-    );
-    printf("Monedas: %d/%d  |  Pasos: %d\n",
-        jugador->monedas,
-        nivel->total_monedas,
-        jugador->pasos
-    );
+    reset_color();
+
+    /* Nivel */
+    printf("Nivel: ");
+    set_color(COL_AMARILLO_CLARO); printf("%d", nivel->numero); reset_color();
+
+    printf("  |  Salud: ");
+    if (jugador->salud > 60)      set_color(COL_VERDE_CLARO);
+    else if (jugador->salud > 30) set_color(COL_AMARILLO_CLARO);
+    else                          set_color(COL_ROJO_CLARO);
+    printf("%d", jugador->salud);
+    reset_color();
+
+    printf("  |  Llave: ");
+    if (jugador->tiene_llave) { set_color(COL_AMARILLO); printf("SI"); }
+    else                      { set_color(COL_GRIS);     printf("NO"); }
+    reset_color();
+    printf("\n");
+
+    printf("Monedas: ");
+    set_color(COL_AMARILLO_CLARO);
+    printf("%d/%d", jugador->monedas, nivel->total_monedas);
+    reset_color();
+    printf("  |  Pasos: ");
+    set_color(COL_CIAN_CLARO);
+    printf("%d", jugador->pasos);
+    reset_color();
+    printf("\n");
+
+    set_color(COL_CIAN);
     printf("========================================\n");
+    reset_color();
 }
 
 int mover_jugador(Jugador *jugador, Nivel *nivel, char direccion) {
@@ -153,25 +193,45 @@ int mover_jugador(Jugador *jugador, Nivel *nivel, char direccion) {
 }
 
 void mostrar_resumen_nivel(const Jugador *jugador, const Nivel *nivel, int puntaje) {
+    set_color(COL_CIAN);
     printf("\n=================================\n");
+    set_color(COL_VERDE_CLARO);
     printf("Nivel %d completado\n", nivel->numero);
-    printf("Monedas recolectadas: %d / %d\n", jugador->monedas, nivel->total_monedas);
-    printf("Pasos realizados: %d\n", jugador->pasos);
-    printf("Salud restante: %d\n", jugador->salud);
-    printf("Puntaje del nivel: %d\n", puntaje);
+    reset_color();
+    printf("Monedas recolectadas: ");
+    set_color(COL_AMARILLO_CLARO); printf("%d / %d\n", jugador->monedas, nivel->total_monedas); reset_color();
+    printf("Pasos realizados: ");
+    set_color(COL_CIAN_CLARO);     printf("%d\n", jugador->pasos); reset_color();
+    printf("Salud restante: ");
+    if (jugador->salud > 60)       set_color(COL_VERDE_CLARO);
+    else if (jugador->salud > 30)  set_color(COL_AMARILLO_CLARO);
+    else                           set_color(COL_ROJO_CLARO);
+    printf("%d\n", jugador->salud); reset_color();
+    printf("Puntaje del nivel: ");
+    set_color(COL_AMARILLO_CLARO); printf("%d\n", puntaje); reset_color();
+    set_color(COL_CIAN);
     printf("=================================\n");
+    reset_color();
     printf("\nPresiona cualquier tecla para continuar...");
     _getch();
 }
 
 void mostrar_resumen_final(int monedas_totales, int pasos_totales, int niveles_completados, int puntaje_final) {
+    set_color(COL_AMARILLO_CLARO);
     printf("\n=================================\n");
     printf("Juego completado\n");
-    printf("Monedas totales recolectadas: %d\n", monedas_totales);
-    printf("Pasos totales: %d\n", pasos_totales);
-    printf("Niveles completados: %d\n", niveles_completados);
-    printf("Puntaje final: %d\n", puntaje_final);
+    reset_color();
+    printf("Monedas totales recolectadas: ");
+    set_color(COL_AMARILLO_CLARO); printf("%d\n", monedas_totales); reset_color();
+    printf("Pasos totales: ");
+    set_color(COL_CIAN_CLARO);     printf("%d\n", pasos_totales); reset_color();
+    printf("Niveles completados: ");
+    set_color(COL_VERDE_CLARO);    printf("%d\n", niveles_completados); reset_color();
+    printf("Puntaje final: ");
+    set_color(COL_AMARILLO_CLARO); printf("%d\n", puntaje_final); reset_color();
+    set_color(COL_AMARILLO_CLARO);
     printf("=================================\n");
+    reset_color();
 }
 
 int preguntar_reintentar() {

@@ -4,32 +4,49 @@
 
 static void mostrar_menu() {     
     limpiar_pantalla();
+    set_color(COL_CIAN);
     printf("============================================================\n");
+    set_color(COL_AMARILLO_CLARO);
     printf("                            LABERINTO                       \n");
+    set_color(COL_CIAN);
     printf("============================================================\n");
+    reset_color();
     printf("\n");
-    printf("  1. Jugar\n");
-    printf("  2. Salir\n");
+    set_color(COL_VERDE_CLARO);  printf("  1. Jugar\n");
+    set_color(COL_ROJO_CLARO);   printf("  2. Salir\n");
+    reset_color();
     printf("\n");
     printf("Selecciona una opcion: ");
 }
 
 static void mensaje_inicio() {
     limpiar_pantalla();
+    set_color(COL_CIAN);
     printf("============================================================\n");
+    set_color(COL_AMARILLO_CLARO);
     printf("                   Iniciando Laberinto...                   \n");
+    set_color(COL_CIAN);
     printf("============================================================\n");
+    reset_color();
     printf("\n");
-    printf("  Controles:\n");
+    set_color(COL_BLANCO_CLARO); printf("  Controles:\n"); reset_color();
+    set_color(COL_VERDE_CLARO);
     printf("    W = Arriba\n");
     printf("    S = Abajo\n");
     printf("    A = Izquierda\n");
     printf("    D = Derecha\n");
+    set_color(COL_ROJO_CLARO);
     printf("    Q = Salir\n");
+    reset_color();
     printf("\n");
-    printf("  Recoge la llave (K) para abrir la puerta (D)\n");
-    printf("  Cuidado con las trampas (,) te quitan 10 de salud\n");
-    printf("  Llega a la salida (E) para completar el nivel\n");
+    set_color(COL_AMARILLO);  printf("  Recoge la llave (K)");
+    reset_color();            printf(" para abrir la ");
+    set_color(COL_MAGENTA);   printf("puerta (D)\n");
+    reset_color();
+    set_color(COL_ROJO_CLARO); printf("  Cuidado con las trampas (,)");
+    reset_color();             printf(" te quitan 10 de salud\n");
+    set_color(COL_VERDE_CLARO); printf("  Llega a la salida (E)");
+    reset_color();              printf(" para completar el nivel\n");
     printf("\n");
     printf("Presiona cualquier tecla para comenzar...");
     _getch();
@@ -72,32 +89,42 @@ static void jugar_nivel(int numero_nivel, Jugador *jugador, int *niveles_complet
                 limpiar_pantalla();
                 imprimir_ventana(nivel.mapa, jugador->fila, jugador->columna);
                 imprimir_hud(jugador, &nivel);
+                set_color(COL_AMARILLO_CLARO);
                 printf("\nMoneda recolectada! +1\n");
+                reset_color();
                 Sleep(500);
             } else if (resultado == 2) {
                 limpiar_pantalla();
                 imprimir_ventana(nivel.mapa, jugador->fila, jugador->columna);
                 imprimir_hud(jugador, &nivel);
+                set_color(COL_AMARILLO);
                 printf("\nLlave recogida! Ahora puedes abrir la puerta.\n");
+                reset_color();
                 Sleep(700);
             } else if (resultado == 3) {
                 limpiar_pantalla();
                 imprimir_ventana(nivel.mapa, jugador->fila, jugador->columna);
                 imprimir_hud(jugador, &nivel);
+                set_color(COL_MAGENTA_CLARO);
                 printf("\nPuerta abierta!\n");
+                reset_color();
                 Sleep(700);
             } else if (resultado == -2) {
                 limpiar_pantalla();
                 imprimir_ventana(nivel.mapa, jugador->fila, jugador->columna);
                 imprimir_hud(jugador, &nivel);
+                set_color(COL_ROJO_CLARO);
                 printf("\nTrampa! -10 de salud. Salud actual: %d\n", jugador->salud);
+                reset_color();
                 Sleep(700);
 
                 if (jugador->salud <= 0) {
                     limpiar_pantalla();
+                    set_color(COL_ROJO_CLARO);
                     printf("\n============================================================\n");
                     printf("                      GAME OVER                             \n");
                     printf("============================================================\n");
+                    reset_color();
                     printf("\nTe quedaste sin salud en el nivel %d\n", numero_nivel);
 
                     if (preguntar_reintentar()) {

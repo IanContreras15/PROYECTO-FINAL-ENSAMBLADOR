@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "mapas.h"
+#include "colores.h"
 
 #define SALUD_INICIAL  100
 #define DANO_TRAMPA     10
@@ -45,5 +46,8 @@ int validar_movimiento(const char *mapa, int columnas, int fila, int columna);
 int calcular_puntaje(int monedas, int pasos, int niveles_completados);
 int detectar_objeto(const char *mapa, int columnas, int fila, int columna, char objeto);
 int contar_celdas_libres(const char *mapa, int total_celdas);
+
+/* Rutina ASM: establece color de consola (0-15) */
+void establecer_color(int color);
 
 #endif
